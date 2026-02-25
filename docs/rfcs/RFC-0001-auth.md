@@ -390,6 +390,127 @@ auth {
 OAuth accounts are linked to User entities via the Account relationship.
 A user can have multiple linked providers.
 
+### 8. Access Control Models (RBAC / ABAC / ReBAC)
+
+iDB's policy language doesn't force a single access control model. RBAC,
+ABAC, and ReBAC are all just patterns within the same `@allow/@deny`
+predicates:
+
+```python
+# RBAC — role-based
+@allow(read, where: caller.role == "admin")
+@allow(write, where: caller.role in ["admin", "editor"])
+
+# ABAC — attribute-based, checks properties on caller and resource
+@allow(read, where: caller.department == department)
+@allow(write, where: caller.clearance >= sensitivity_level)
+
+# ReBAC — relationship-based, follows graph edges
+@allow(read, where: caller -> OrgMember -> Org -> Brand -> Product == this)
+@allow(delete, where: caller -> Team -> Project == this.project)
+
+# Mix all three in one rule
+@allow(write,
+  where: caller.role == "editor"
+    and caller.region == region
+    and caller -> OrgMember -> Org -> Brand -> Product == this
+)
+```
+
+No configuration to "enable RBAC mode" — the policy language is expressive
+enough that all models are natural.
+
+### 9. Policy Compilation & Format Mapping
+
+iDB policies can be compiled to and from external authorization formats.
+This makes iDB the single source of truth for policies across your entire
+stack.
+
+#### Export: iDB -> External Formats
+
+Graph-path policies are flattened using JWT claims (since iDB resolves
+traversals into flat claims at token issuance time). The compiler targets:
+
+**OPA Rego:**
+```rego
+# Source: @allow(read, where: caller -> OrgMember -> Org -> Brand -> Product == this)
+package idb.product
+default allow = false
+allow {
+    input.action == "read"
+    input.resource.brand_id == input.caller.brand_ids[_]
+}
+```
+
+**Cerbos YAML:**
+```yaml
+resourcePolicy:
+  resource: "product"
+  rules:
+    - actions: ["read"]
+      effect: EFFECT_ALLOW
+      condition:
+        match:
+          expr: request.resource.attr.brand_id in request.principal.attr.brand_ids
+```
+
+**Cedar:**
+```
+permit(
+  principal,
+  action == Action::"read",
+  resource is Product
+) when {
+  resource.brand_id in principal.brand_ids
+};
+```
+
+**Zanzibar / SpiceDB:**
+```
+definition product {
+  relation org: organization
+  permission read = org->member
+}
+```
+
+#### Import: External Formats -> iDB
+
+Teams migrating to iDB can import existing policies:
+
+```bash
+# Import from OPA
+idb policy import --from rego ./policies/
+
+# Import from Cerbos
+idb policy import --from cerbos ./resources/
+
+# Import from Cedar
+idb policy import --from cedar ./policies.cedar
+```
+
+The importer maps flat attribute checks back to iDB predicates. Graph-path
+policies are suggested where relationships exist in the schema but must be
+reviewed — the importer can't always infer the intended traversal from flat
+attributes alone.
+
+#### Sync
+
+For hybrid deployments where both iDB and external engines enforce policies:
+
+```python
+authz {
+  sync {
+    target: opa { url: "https://opa.internal/v1/policies" }
+    on_change: push     # auto-push compiled policies when @allow/@deny change
+    format: rego
+  }
+}
+```
+
+When a policy changes in iDB's schema, the compiled Rego/Cerbos/Cedar is
+automatically pushed to the external engine. Policies stay in sync without
+manual export.
+
 ## Interop Matrix
 
 | Your Stack | iDB Mode | How It Works |
@@ -398,8 +519,10 @@ A user can have multiple linked providers.
 | Clerk/Auth0 + REST API | External JWT + native authz | Bring your JWT, iDB enforces policies |
 | Supabase + Postgres | External JWT + native authz | Same JWT works for both Postgres RLS and iDB policies |
 | Enterprise + OPA | External JWT + external authz | iDB delegates to your policy engine |
+| Enterprise + OPA, adopting iDB | Import Rego → iDB policies | Bring existing policies in, iDB enforces natively |
 | Migrating from Postgres | External JWT now, native later | Start with existing auth, migrate incrementally |
 | Microservices | Native authn, iDB issues JWTs | All services verify against iDB's JWKS endpoint |
+| Microservices + mixed engines | Native authz, export to Rego/Cedar | Define once in iDB, compile out to OPA/Cedar/Cerbos |
 
 ## Performance Considerations
 
