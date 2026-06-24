@@ -1,0 +1,26 @@
+[workspace]
+members = [
+  "crates/idb-core",
+  "crates/idb-index",
+  "crates/idb-ordered-log",
+  "crates/idb-storage",
+  "crates/idb-executor-cpu",
+  "crates/idb-executor-cerebras-stub",
+  "crates/idb-parser",
+  "crates/idb-planner",
+  "crates/idb-gateway",
+  "crates/idb-server",
+  "crates/idb-wire",
+]
+resolver = "2"
+
+[workspace.package]
+edition = "2021"
+license = "BSL-1.1"
+authors = ["NornDB Contributors"]
+
+[workspace.dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
+chrono = { version = "0.4", default-features = false, features = ["clock", "serde"] }

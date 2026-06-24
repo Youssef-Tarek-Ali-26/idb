@@ -1,0 +1,19 @@
+{
+  "type": "TopK",
+  "k": 5,
+  "order_by": { "field": "price", "direction": "desc" },
+  "source": {
+    "type": "Filter",
+    "predicates": [
+      { "type": "FieldPredicate", "field": "price", "op": "lt", "value": 3000 },
+      {
+        "type": "SemanticPredicate",
+        "function": "meaning",
+        "query": "elegant traditional",
+        "threshold": null
+      }
+    ],
+    "source": { "type": "EntityScan", "entity": "Product" }
+  },
+  "mode": "once"
+}

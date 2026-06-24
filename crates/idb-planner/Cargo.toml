@@ -1,0 +1,16 @@
+[package]
+name = "idb-planner"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+
+[dependencies]
+idb-core = { path = "../idb-core" }
+idb-parser = { path = "../idb-parser" }
+serde.workspace = true
+thiserror.workspace = true
+
+[dev-dependencies]
+serde = { workspace = true, features = ["derive"] }
+serde_yaml = "0.9"

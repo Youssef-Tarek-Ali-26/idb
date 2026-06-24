@@ -1,0 +1,12 @@
+{
+  "type": "Traversal",
+  "mode": "watch",
+  "steps": [
+    { "type": "EntityRef", "entity": "Brand", "id": "Norn Gold" },
+    { "type": "Edge", "direction": "out" },
+    { "type": "EntityScan", "entity": "Product" }
+  ],
+  "where": [
+    { "type": "FieldPredicate", "field": "price", "op": "lt", "value": 3000 }
+  ]
+}

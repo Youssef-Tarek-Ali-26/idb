@@ -1,0 +1,17 @@
+[package]
+name = "idb-executor-cpu"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+
+[dependencies]
+idb-core = { path = "../idb-core" }
+idb-ordered-log = { path = "../idb-ordered-log" }
+idb-storage = { path = "../idb-storage" }
+idb-planner = { path = "../idb-planner" }
+chrono.workspace = true
+serde_json.workspace = true
+
+[dev-dependencies]
+idb-executor-cerebras-stub = { path = "../idb-executor-cerebras-stub" }

@@ -1,10 +1,10 @@
 # CSL Reference Documentation
 
-This directory contains reference documentation for the Cerebras Software Language (CSL),
+This directory contains local reference docs for the Cerebras Software Language (CSL),
 compiled from the official Cerebras SDK 1.4.0 documentation.
 
-These docs serve as a local reference for iDB/NornDB kernel development, ensuring
-we have reliable CSL documentation available during development.
+In iDB, search and execution are designed to run at wafer scale. These references
+exist so kernel work can move quickly without depending on external docs every time.
 
 ## Contents
 
@@ -20,6 +20,6 @@ we have reliable CSL documentation available during development.
 
 ## Official Sources
 
-- SDK Documentation: https://sdk.cerebras.net/
-- SDK Examples: https://github.com/Cerebras/sdk-examples
-- CSL Language Guide: https://sdk.cerebras.net/csl/language_index
+- SDK Documentation: [sdk.cerebras.net](https://sdk.cerebras.net/)
+- SDK Examples: [github.com/Cerebras/sdk-examples](https://github.com/Cerebras/sdk-examples)
+- CSL Language Guide: [sdk.cerebras.net/csl/language_index](https://sdk.cerebras.net/csl/language_index)

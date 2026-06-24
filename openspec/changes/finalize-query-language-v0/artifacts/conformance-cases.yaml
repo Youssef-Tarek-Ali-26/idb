@@ -1,0 +1,30 @@
+version: 1
+cases:
+  - id: basic-structured
+    query: 'Product where price < 3000'
+    expect:
+      root: EntityScan
+      predicates: 1
+      mode: once
+
+  - id: hybrid-query
+    query: 'Product where price < 3000 and meaning("elegant traditional") | top(5, price desc)'
+    expect:
+      root: TopK
+      predicates: 2
+      semantic: true
+      mode: once
+
+  - id: traversal-outbound
+    query: 'Brand("Norn Gold") -> Product where price < 3000'
+    expect:
+      root: Traversal
+      hops: 1
+      mode: once
+
+  - id: watch-hybrid
+    query: 'watch Product where meaning("trending") | top(20)'
+    expect:
+      root: TopK
+      semantic: true
+      mode: watch

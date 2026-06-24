@@ -1,0 +1,26 @@
+query             = [mode] pipeline ;
+mode              = "watch" ;
+
+pipeline          = source { "|" transform } ;
+source            = traversal | entity_scan ;
+traversal         = traversal_step { ("->" | "<-") traversal_step } [where_clause] ;
+traversal_step    = entity_ref | entity_scan ;
+
+entity_scan       = IDENT [where_clause] ;
+entity_ref        = IDENT "(" (STRING | NUMBER | IDENT) ")" ;
+
+where_clause      = "where" predicate { ("and" | NEWLINE) predicate } ;
+predicate         = field_predicate | semantic_predicate | range_predicate ;
+field_predicate   = IDENT pred_op literal ;
+range_predicate   = IDENT "in" literal ".." literal ;
+semantic_predicate = "meaning" "(" STRING ["," "threshold" "=" NUMBER] ")" ;
+
+pred_op           = "==" | "!=" | "<" | "<=" | ">" | ">=" ;
+literal           = STRING | NUMBER | BOOLEAN | TIMESTAMP ;
+
+transform         = sort_transform | top_transform | group_transform | agg_transform | take_transform ;
+sort_transform    = "sort" "(" IDENT ["asc" | "desc"] ")" ;
+top_transform     = "top" "(" NUMBER ["," IDENT ["asc" | "desc"]] ")" ;
+group_transform   = "group" "(" IDENT ")" ;
+agg_transform     = ("count" | "sum" | "avg" | "min" | "max") "(" [IDENT] ")" ;
+take_transform    = "take" "(" NUMBER ")" ;
